@@ -23,6 +23,7 @@ import org.apache.hadoop.util.ReflectionUtils.newInstance
 import org.kiji.common.flags.Flag
 import org.kiji.common.flags.FlagParser
 import org.apache.avro.generic.GenericDatumReader
+import org.apache.avro.file.FileReader
 
 /**
  * Command-line tool to manipulate (inspect) files in Hadoop DFS.
@@ -151,12 +152,15 @@ object FileTool {
   def readAvroContainer(path: Path): Unit = {
     val context: FileContext = FileContext.getFileContext()
     val input: SeekableInput = new AvroFSInput(context, path)
-    val datumReader: DatumReader[_] = new GenericDatumReader()
-    val reader = DataFileReader.openReader(input, datumReader)
+    val datumReader: GenericDatumReader[_] = new GenericDatumReader()
+    val reader: FileReader[_] = DataFileReader.openReader(input, datumReader)
     try {
+      println("Schema:\n%s".format(reader.getSchema().toString(true)))
+      var counter = 0
       while (reader.hasNext) {
         val rec = reader.next()
-        println(rec)
+        println("entry #%d: %s".format(counter, rec))
+        counter += 1
       }
     } finally {
       reader.close()
