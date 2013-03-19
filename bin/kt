@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import re
+import subprocess
+import sys
+
+
+def Find(root, regex):
+  """Finds files whose name match a given regexp.
+
+  Args:
+    root: Base directory to scan for files.
+    regex: Match file names against this regexp.
+  Yields:
+    Paths of the files matching the regexp.
+  """
+  assert os.path.exists(root), root
+  pattern = re.compile(regex)
+  for dir_path, dir_names, file_names in os.walk(root):
+    for file_name in file_names:
+      if pattern.match(file_name):
+        yield os.path.join(dir_path, file_name)
+
+
+def HadoopClasspath():
+  proc = subprocess.Popen(
+      args=['hadoop', 'classpath'],
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+  )
+  (out, err) = proc.communicate()
+  assert (proc.returncode == 0), (out + err)
+  return out.decode().split(':')
+
+
+
+def Main(args):
+  this_script = os.path.realpath(args[0])
+  root_dir = os.path.dirname(os.path.dirname(this_script))
+  target_dir = os.path.join(root_dir, 'target')
+  classpath = list(Find(target_dir, r'.*\.jar'))
+  classpath.insert(0, os.path.join(target_dir, 'classes'))
+  classpath.extend(HadoopClasspath())
+  classpath.append(os.path.join(root_dir, 'src', 'main', 'conf'))
+  command_line = ['java', '-cp', ':'.join(classpath)] + args[1:]
+  # print(command_line)
+  proc = subprocess.Popen(
+    args=command_line,
+  )
+  proc.communicate()
+
+
+if __name__ == '__main__':
+  Main(sys.argv)
