@@ -44,6 +44,7 @@ def Main(args):
   classpath.insert(0, os.path.join(target_dir, 'classes'))
   classpath.extend(HadoopClasspath())
   classpath.append(os.path.join(root_dir, 'src', 'main', 'conf'))
+  classpath.insert(0, os.path.join(root_dir, '.eclipse.classes'))
   command_line = ['java', '-cp', ':'.join(classpath)] + args[1:]
   # print(command_line)
   proc = subprocess.Popen(

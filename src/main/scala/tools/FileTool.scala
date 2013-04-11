@@ -24,12 +24,15 @@ import org.kiji.common.flags.Flag
 import org.kiji.common.flags.FlagParser
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.file.FileReader
+import org.apache.hadoop.conf.Configuration
+import org.apache.avro.file.DataFileConstants
+import java.util.Arrays
 
 /**
  * Command-line tool to manipulate (inspect) files in Hadoop DFS.
  */
 object FileTool {
-  @Flag(name="format", usage="File format. One of 'seq', 'hfile', 'map'.")
+  @Flag(name="format", usage="File format. One of 'seq', 'hfile', 'map', 'avro'.")
   var format: String = null
 
   @Flag(name="path",
@@ -167,6 +170,39 @@ object FileTool {
     }
   }
 
+  def readFileStart(path: Path, conf: Configuration, nbytes: Int = 16): Array[Byte] = {
+    val fs = FileSystem.get(conf)
+    val istream = fs.open(path)
+    try {
+      val bytes = new Array[Byte](16)
+      val nbytesRead = istream.read(bytes)
+      return bytes.slice(0, nbytesRead)
+    } finally {
+      istream.close()
+    }
+  }
+
+  def isMagic(bytes: Array[Byte], magic: Array[Byte]): Boolean = {
+    return Arrays.equals(bytes.slice(0, magic.length), magic)
+  }
+
+  // See DataFileConstants.MAGIC
+  val AvroContainerFileMagic = Array[Byte]('O', 'b', 'j')
+
+  // See SequenceFile.VERSION
+  val SequenceFileMagic = Array[Byte]('S', 'E', 'Q')
+
+  def guessFileType(path: Path, conf: Configuration): Option[String] = {
+    try {
+      val bytes = readFileStart(path, conf)
+      if (isMagic(bytes, AvroContainerFileMagic)) return Some("avro")
+      if (isMagic(bytes, SequenceFileMagic)) return Some("seq")
+    } catch {
+      case exn => Console.err.println(exn)
+    }
+    return None
+  }
+
   /**
    * Program entry point.
    *
@@ -180,7 +216,12 @@ object FileTool {
     val filePath = new Path(path)
     conf.set("fs.defaultFS", path)
 
-    require((format != null) && !format.isEmpty, "Specify --format=...")
+    if (format == null) {
+      format = guessFileType(filePath, conf) match {
+        case Some(fmt) => fmt
+        case None => sys.error("Unable to guess file format, specify --format=...")
+      }
+    }
     format match {
       case "seq" => readSequenceFile(filePath)
       case "map" => readMapFile(filePath)

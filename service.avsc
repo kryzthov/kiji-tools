@@ -1,0 +1,54 @@
+{
+  "protocol" : "Service",
+  "namespace" : "tools.avro",
+  "types" : [ {
+    "type" : "enum",
+    "name" : "ServiceErrorType",
+    "symbols" : [ "ERROR" ]
+  }, {
+    "type" : "error",
+    "name" : "ServiceError",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "ServiceErrorType",
+      "doc" : "Error type"
+    }, {
+      "name" : "error_message",
+      "type" : [ "null", "string" ],
+      "doc" : "Human-readable error details",
+      "default" : null
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "ListRequest",
+    "fields" : [ {
+      "name" : "dir_path",
+      "type" : "string",
+      "doc" : "Lists the files in this directory."
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "ListReply",
+    "fields" : [ {
+      "name" : "dir_path",
+      "type" : "string"
+    }, {
+      "name" : "paths",
+      "type" : {
+        "type" : "array",
+        "items" : "string"
+      }
+    } ]
+  } ],
+  "messages" : {
+    "list" : {
+      "doc" : "* Lists files on HDFS.",
+      "request" : [ {
+        "name" : "req",
+        "type" : "ListRequest"
+      } ],
+      "response" : "ListReply",
+      "errors" : [ "ServiceError" ]
+    }
+  }
+}

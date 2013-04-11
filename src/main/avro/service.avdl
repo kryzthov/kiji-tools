@@ -1,0 +1,35 @@
+@namespace("tools.avro")
+protocol Service {
+
+  enum ServiceErrorType {
+    ERROR
+  }
+
+  error ServiceError {
+    /** Error type */
+    ServiceErrorType type;
+
+    /** Human-readable error details */
+    union { null, string } error_message = null;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  record ListRequest {
+    /** Lists the files in this directory. */
+    string dir_path;
+  }
+
+  record ListReply {
+    string dir_path;
+    array<string> paths;
+  }
+
+  /**
+   * Lists files on HDFS.
+   */
+  ListReply list(ListRequest req) throws ServiceError;
+
+  // ---------------------------------------------------------------------------
+
+}

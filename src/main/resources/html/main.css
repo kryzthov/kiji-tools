@@ -1,0 +1,15 @@
+table, td, th {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    border-style: solid;
+    border-width: 1px;
+    white-space: nowrap;
+}
+
+input {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    border-style: solid;
+    border-width: 1px;
+    white-space: nowrap;
+}

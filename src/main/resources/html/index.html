@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<title>Kiji tool</title>
+
+<!-- Document style -->
+<link rel="stylesheet" href="main.css" />
+
+<!-- HTML content starts here -->
+<div>
+  Target:
+  <input type="url" name="kiji_uri" id="kiji_uri" size="100" value="kiji://.env/default" />
+</div>
+
+<div id="output_div">
+  <table id="output_table">
+    <tr><th>Header</th></tr>
+
+    <tr><td>Data</td></tr>
+  </table>
+</div>
+
+
+<div id="debug_div">
+  <!-- Debug messages will be appended here -->
+</div>
+
+<!-- JavaScript main entry point -->
+<script type="text/javascript" src="scan.js"></script>
