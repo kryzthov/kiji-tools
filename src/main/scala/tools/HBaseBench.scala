@@ -65,10 +65,10 @@ object HBaseBench {
   var hbase: String = "localhost:3434"
 
   @Flag(name="nversions")
-  var nversions: Long = 1000
+  var nversions: Int = 1000
 
   @Flag(name="nqualifiers")
-  var nqualifiers: Long = 1000
+  var nqualifiers: Int = 1000
 
   @Flag(name="max-versions")
   var mMaxVersions: Int = 1000
@@ -167,7 +167,7 @@ object HBaseBench {
 
     def listQualifiers(): Unit = {
       Timing("get") {
-        val limit = 1000
+        val limit = nqualifiers
         var offset = 0
         var qualifier: Bytes = null
 
@@ -260,14 +260,14 @@ object HBaseBench {
           .createWriter(fs, path, mHFileBlockSizeBytesFlag, compressionType, KeyValue.KEY_COMPARATOR)
 
       var counter: Long = 0
-      def log(qualifier: Long, timestamp: Long): Unit = {
+      def log(qualifier: Int, timestamp: Long): Unit = {
         if (counter == 0) Log.info("q:{}, ts:{}", qualifier, timestamp)
         counter = (counter + 1) % 100000
       }
 
-      for (qualifierId <- 0L until nqualifiers) {
+      for (qualifierId <- 0 until nqualifiers) {
         val qualifier = "q%09d".format(qualifierId)
-        for (timestamp <- (nversions - 1).to(0L, -1)) {
+        for (timestamp <- (nversions - 1).to(0, -1)) {
           log(qualifierId, timestamp)
           val value = "value-%d".format(timestamp)
           val kv = new KeyValue(rowKey, familyName, qualifier, timestamp, value)
