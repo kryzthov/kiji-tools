@@ -221,6 +221,7 @@ object FileTool {
         case Some(fmt) => fmt
         case None => sys.error("Unable to guess file format, specify --format=...")
       }
+      println("Detected type: %s".format(format))
     }
     format match {
       case "seq" => readSequenceFile(filePath)
